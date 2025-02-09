@@ -1,0 +1,41 @@
+# Use Python 3.9 slim image as base
+FROM python:3.9-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    python3-dev \
+    libgl1-mesa-glx \
+    # Install libGL dependency for OpenCV
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy only the requirements.txt to leverage Docker cache for dependencies
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application
+COPY . .
+
+# Create uploads directory if it doesn't exist
+RUN mkdir -p /app/uploads
+
+# Set environment variables
+ENV FLASK_APP=app
+ENV FLASK_ENV=production
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Create and switch to non-root user for security
+RUN useradd -m myuser && chown -R myuser:myuser /app
+USER myuser
+
+# Expose the port the app runs on
+EXPOSE 5000
+
+# Command to run the application with migrations
+CMD ["sh", "-c", "flask db upgrade && flask run --host=0.0.0.0"]

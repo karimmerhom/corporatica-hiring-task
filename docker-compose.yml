@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  flask-app:
+    build:
+      context: ./BE 
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_APP: app
+      FLASK_ENV: production
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+    volumes:
+      - ./BE:/app  
+
+ 
+  frontend:
+    build:
+      context: ./FE
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
